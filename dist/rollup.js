@@ -1,74 +1,161 @@
+
+//vite插件库  github 官方插件源码  vite awsome社区源码
+
+
+什么是静态分析：在编译时进行处理，构建模块对象
+_dependsOn 是 Rollup 依赖分析的基础，驱动模块对象的创建和优化。
+导入/导出模块对象是 依赖关系的具体表现，通过 _dependsOn 关联到其他模块。
+
+_scope（描述当前作用域内变量和引用关系的核心数据结构）
+_dependsOn（表示模块 / 代码单元的依赖关系，）
+
+import { foo } from './dep'; 对于这模块引入
+在 AST 中创建 ImportDeclaration 节点
+将 './dep' 添加到当前模块的 _dependsOn.static
+生成导入模块对象（指向 './dep' 模块）
+在当前模块的 _scope 中绑定变量 foo，标记为「导入绑定」
+
+由生成的导入，导出模块对象 和 当前模块_dependsOn共同构建模块间的关系
+
+
+
+处理入口文件路径（绝对路径，相对路径，还有正则匹配路径等）获取文件-- - 读取文件内容，根据文件内容生成ast树（在new moudle时 会使用acorn的parse方法）， 
+在该ast的基础上 根据ast树获取模块，处理模块（在模块解析阶段是并行的，在转换阶段是有序并行的，父模块总是等待其依赖模块处理完成）
+以及对 该ast树进行 变量定义，变量修改，以及作用域的收集处理，在 每个ast节点的（_modules, _defines，_modifies 以及 _scope 对象内）保存变量（在对应的标识符内存储相关的依赖项），
+同时结合模块处理生成的导入模块对象和导出模块对象，以及_dependsOn 构建模块依赖关系 建立模块间的联系（）  然后就完成了一个  包含模块间关系，以及模块内的变量啊及其作用域关系的 的ast对象 
+构建生成完整的ast树 然后 ast树转成源码
+
+
+处理模块（通过静态分析处理？）：acorn parse 生成ast树 遍历ast树 根据生成的ast树，
+使用analays方法分析处理模块（通过静态分析处理？），去处理esm规范下的各个模块的引用方式（是导入模块还是导出模块）然后根据模块的处理方式，去进行模块导入导出语句的处理（调用expandStatement 和 expandAllStatement）
+
+怎么处理模块 和模块构建的处理：
+（ast树中有可以区分模块的一个变量（type变量），根据type可以区分模块是啥模块）根据type 构建生成一个导出模块对象和导入模块对象（该对象体现了模块间具体的依赖关系）
+根据这个对象进一步 去判断不同模块的不同导入导出语句的，再调用（expandStatement 和 expandAllStatement）对不同模块的不同导入导出语句j进行处理
+
+
+/*比如内部模块，外部模块处理等（内部模块和外部模块的处理内部又区分对不同导出模式（ 默认导入还是 还是具名导入等其他的导入的处理），以及一些命名冲突，内部导入，外部导入的处理）*/
+处理完成后 在结合生成的ast树  进行变量定义，变量修改，以及作用域的收集处理，在 每个ast节点的（_defines，_modifies 以及 _scope 对象内）
+保存变量和当前模块的作用域以及作用域链（就是生成一个嵌套对象，对象内部包含上下级作用域的引用 在_scope内），
+建立不同模块间的联系（在_dependsOn内）  然后就完成了一个  包含模块间关系，以及模块内的变量啊及其作用域关系的 的ast对象
+statement
+
+根据在生成完整后的ast对象 分析标识符，寻找模块依赖项,
+	通过ast树中的 _scope（描述当前作用域内变量和引用关系的核心数据结构） 去作用域内找当前标识符的依赖项，
+ （当解析到标识符时，遍历他所在的作用域，如果当前作用域内没有，就去父级作用域，一直找到顶层作用域）
+ 如果是在同一个模块内 则_scope内或其作用域链上能找到相关的属性
+如果在当前模块的作用域链内找不到变量，则会结合去_dependsOn内找到对应模块，再去找到对应模块作用域内的属性（_scope和_dependsOn结合处理）
+
+
+
+
+
+
+
+
+rouUp构建钩子
+options 配置初始化阶段，未初始化完成（这个钩子不应该有副作用，只应用于修改选项） -
+buildstart -（构建开始阶段（配置已初始化完成），用于清理副作用（清理构建目录，初始化缓存等））
+resolveDynamicImport
+（处理更复杂的动态导入优先使用，使用优先级高于resolveId）---
+resolveID（动态导入和静态导入都可处理）--解析模块 确定模块路径
+load（缓存的和非缓存的）--加载模块
+transform-- - 转换模块
+
 const fs = require('fs')
 const path = require('path')
 const MagicString = require('magic-string')
 const { parse } = require('acorn')
+//掘金参考 roullup构建最初版
+https://juejin.cn/post/6898865993289105415
 
+/**
+ * rollup 主函数，用于打包模块
+ * @param {string} entry - 入口文件路径
+ * @param {Object} options - 配置选项
+ * @returns {Promise} - 返回包含 generate 和 write 方法的 Promise
+ */
 function rollup(entry, options = {}) {
-    const bundle = new Bundle({ entry, ...options })
-    return bundle.build().then(() => {
-        return {
-            generate: options => bundle.generate(options),
-            wirte(dest, options = {}) {
-                const { code } = bundle.generate({
+	const bundle = new Bundle({ entry, ...options })
+	return bundle.build().then(() => {
+		return {
+			//生成代码
+			generate: options => bundle.generate(options),
+			//写入文件
+			wirte(dest, options = {}) {
+				const { code } = bundle.generate({
 					dest,
 					format: options.format,
 				})
 
 				return fs.writeFile(dest, code, err => {
-                    if (err) throw err
-                })
-            }
-        }
-    })
+					if (err) throw err
+				})
+			}
+		}
+	})
 }
 
+/**
+ * Bundle 类，负责管理整个打包过程
+ */
 class Bundle {
-    constructor(options = {}) {
-        // 防止用户省略 .js 后缀
-        this.entryPath = path.resolve(options.entry.replace(/\.js$/, '') + '.js')
-        // 获取入口文件的目录
-        this.base = path.dirname(this.entryPath)
-        // 入口模块
-        this.entryModule = null
-        // 读取过的模块都缓存在此，如果重复读取则直接从缓存读取模块，提高效率
-        this.modules = {}
-        // 最后真正要生成的代码的 AST 节点语句，不用生成的 AST 会被省略掉
-        this.statements = []
-        // 外部模块，当通过路径获取不到的模块就属于外部模块，例如 const fs = require('fs') 中的 fs 模块
+	constructor(options = {}) {
+		// 防止用户省略 .js 后缀
+		this.entryPath = path.resolve(options.entry.replace(/\.js$/, '') + '.js')
+		// 获取入口文件的目录
+		this.base = path.dirname(this.entryPath)
+		// 入口模块
+		this.entryModule = null
+		// 读取过的模块都缓存在此，如果重复读取则直接从缓存读取模块，提高效率
+		this.modules = {}
+		// 最后真正要生成的代码的 AST 节点语句，不用生成的 AST 会被省略掉
+		this.statements = []
+		// 外部模块，当通过路径获取不到的模块就属于外部模块，例如 const fs = require('fs') 中的 fs 模块
 		this.externalModules = []
 		// import * as test from './foo' 需要用到
 		this.internalNamespaceModules = []
-    }
+	}
 
-    build() {
-        return this.fetchModule(this.entryPath)
-            .then(entryModule => {
-                this.entryModule = entryModule
-                return entryModule.expandAllStatements(true)
-            })
-            .then(statements => {
+	/**
+	 * 构建打包流程
+	 * @returns {Promise} - 构建完成的 Promise
+	 */
+	build() {
+		return this.fetchModule(this.entryPath)
+			.then(entryModule => {
+				this.entryModule = entryModule
+				return entryModule.expandAllStatements(true)
+			})
+			.then(statements => {
 				this.statements = statements
 				this.deconflict()
 			})
-    }
+	}
 
-    // importee 被调用模块文件
-    // importer 调用模块文件
-    // 例如在入口文件 main.js 中引入了另一个文件 foo.js 中的函数
-    // 此时 main.js 就是 importer，而 foo.js 是 importee
-    fetchModule(importee, importer) {
-        return new Promise((resolve, reject) => {
+	/**
+	 * 获取模块
+	 * @param {string} importee - 被调用模块文件路径
+	 * @param {string} importer - 调用模块文件路径
+	 * @returns {Promise} - 返回获取到的模块
+	 */
+	// importee 被调用模块文件
+	// importer 调用模块文件
+	// 例如在入口文件 main.js 中引入了另一个文件 foo.js 中的函数
+	// 此时 main.js 就是 importer，而 foo.js 是 importee
+	fetchModule(importee, importer) {
+		return new Promise((resolve, reject) => {
 			// 如果有缓存，则直接返回
 			if (this.modules[importee]) {
 				resolve(this.modules[importee])
-				return 
+				return
 			}
 
-            let route
-            // 入口文件没有 importer
-            if (!importer) {
-                route = importee
-            } else {
+			let route
+			// 入口文件没有 importer
+			if (!importer) {
+				route = importee
+			} else {
 				// 绝对路径
 				if (path.isAbsolute(importee)) {
 					route = importee
@@ -77,7 +164,7 @@ class Bundle {
 					// 获取 importer 的目录，从而找到 importee 的绝对路径
 					route = path.resolve(path.dirname(importer), importee.replace(/\.js$/, '') + '.js')
 				}
-            }
+			}
 
 			if (route) {
 				fs.readFile(route, 'utf-8', (err, code) => {
@@ -87,7 +174,7 @@ class Bundle {
 						path: route,
 						bundle: this,
 					})
-					
+
 					this.modules[route] = module
 					resolve(module)
 				})
@@ -98,10 +185,15 @@ class Bundle {
 				this.modules[importee] = module
 				resolve(module)
 			}
-        })
-    }
+		})
+	}
 
-    generate(options = {}) {
+	/**
+	 * 生成最终代码
+	 * @param {Object} options - 生成选项
+	 * @returns {Object} - 包含生成代码的对象
+	 */
+	generate(options = {}) {
 		let magicString = new MagicString.Bundle({ separator: '' })
 		// Determine export mode - 'default', 'named', 'none'
 		// 导出模式
@@ -152,8 +244,8 @@ class Bundle {
 				} else {
 					throw new Error('Unhandled export')
 				}
-            }
-			
+			}
+
 			// 例如 import { resolve } from path; 将 resolve 变为 path.resolve
 			replaceIdentifiers(statement, source, replacements)
 
@@ -183,17 +275,22 @@ class Bundle {
 
 			return `var ${module.getCanonicalName('*')} = {\n` +
 				exportKeys.map(key => `${indentString}get ${key} () { return ${module.getCanonicalName(key)} }`).join(',\n') +
-			`\n}\n\n`
+				`\n}\n\n`
 		}).join('')
 
 		magicString.prepend(namespaceBlock)
 
 		magicString = cjs(this, magicString.trim(), exportMode, options)
-        
+
 		return { code: magicString.toString() }
-    }
-    
-    getExportMode(exportMode) {
+	}
+
+	/**
+	 * 获取导出模式
+	 * @param {string} exportMode - 指定的导出模式
+	 * @returns {string} - 最终的导出模式
+	 */
+	getExportMode(exportMode) {
 		const exportKeys = keys(this.entryModule.exports)
 
 		if (!exportMode || exportMode === 'auto') {
@@ -211,6 +308,9 @@ class Bundle {
 		return exportMode
 	}
 
+	/**
+	 * 解决命名冲突
+	 */
 	deconflict() {
 		const definers = {}
 		const conflicts = {}
@@ -255,6 +355,11 @@ class Bundle {
 			})
 		})
 
+		/**
+		 * 获取安全的变量名（避免冲突）
+		 * @param {string} name - 原始变量名
+		 * @returns {string} - 安全的变量名
+		 */
 		function getSafeName(name) {
 			while (has(conflicts, name)) {
 				name = `_${name}`
@@ -266,27 +371,34 @@ class Bundle {
 	}
 }
 
+// 空数组的 Promise，用于优化性能
 const emptyArrayPromise = Promise.resolve([])
 
+/**
+ * 模块类，表示一个 JavaScript 模块
+ */
 class Module {
-    constructor({ code, path, bundle }) {
-        this.code = new MagicString(code, {
+	constructor({ code, path, bundle }) {
+		this.code = new MagicString(code, {
 			filename: path
 		})
 
-        this.path = path
-        this.bundle = bundle
-        this.suggestedNames = {}
-        this.ast = parse(code, {
-            ecmaVersion: 7,
-            sourceType: 'module',
-        })
+		this.path = path
+		this.bundle = bundle
+		this.suggestedNames = {}
+		this.ast = parse(code, {
+			ecmaVersion: 7,
+			sourceType: 'module',
+		})
 
 		this.analyse()
-    }
+	}
 
-    // 分析导入和导出的模块，将引入的模块和导出的模块填入对应的数组
-    analyse() {
+	/**
+	 * 分析模块，处理导入和导出
+	 */
+	// 分析导入和导出的模块，将引入的模块和导出的模块填入对应的数组
+	analyse() {
 		this.imports = {}
 		this.exports = {}
 
@@ -304,8 +416,8 @@ class Module {
 					const isNamespace = specifier.type == 'ImportNamespaceSpecifier'
 
 					const localName = specifier.local.name
-                    const name = isDefault ? 'default' 
-                                    : isNamespace ? '*' : specifier.imported.name
+					const name = isDefault ? 'default'
+						: isNamespace ? '*' : specifier.imported.name
 
 					this.imports[localName] = {
 						source,
@@ -326,9 +438,9 @@ class Module {
 						isDeclaration
 					}
 				} else if (node.type === 'ExportNamedDeclaration') {
-                    // export { foo, bar, baz }
-                    // export var foo = 42
-                    // export function foo () {}
+					// export { foo, bar, baz }
+					// export var foo = 42
+					// export function foo () {}
 					// export { foo } from './foo'
 					source = node.source && node.source.value
 
@@ -342,7 +454,7 @@ class Module {
 								localName,
 								exportedName
 							}
-							
+
 							// export { foo } from './foo'
 							// 这种格式还需要引入相应的模块，例如上述例子要引入 './foo' 模块
 							if (source) {
@@ -388,8 +500,8 @@ class Module {
 			// 读取当前语句下的变量
 			Object.keys(statement._defines).forEach(name => {
 				this.definitions[name] = statement
-            })
-            
+			})
+
 			// 再根据 _modifies 修改它们，_modifies 是在 analyse() 中改变的
 			Object.keys(statement._modifies).forEach(name => {
 				if (!has(this.modifications, name)) {
@@ -401,6 +513,11 @@ class Module {
 		})
 	}
 
+	/**
+	 * 展开所有语句
+	 * @param {boolean} isEntryModule - 是否是入口模块
+	 * @returns {Promise} - 包含所有语句的 Promise
+	 */
 	expandAllStatements(isEntryModule) {
 		let allStatements = []
 
@@ -439,6 +556,11 @@ class Module {
 		})
 	}
 
+	/**
+	 * 展开单个语句
+	 * @param {Object} statement - AST 语句节点
+	 * @returns {Promise} - 包含展开后语句的 Promise
+	 */
 	expandStatement(statement) {
 		if (statement._included) return emptyArrayPromise
 		statement._included = true
@@ -456,13 +578,13 @@ class Module {
 			})
 		})
 
-		// then include the statement itself
+			// then include the statement itself
 			.then(() => {
 				result.push(statement)
 			})
 			.then(() => {
 				// then include any statements that could modify the
-		// thing(s) this statement defines
+				// thing(s) this statement defines
 				return sequence(keys(statement._defines), name => {
 					const modifications = has(this.modifications, name) && this.modifications[name]
 
@@ -484,6 +606,11 @@ class Module {
 			})
 	}
 
+	/**
+	 * 定义变量或函数
+	 * @param {string} name - 变量或函数名
+	 * @returns {Promise} - 包含定义语句的 Promise
+	 */
 	define(name) {
 		if (has(this.definitionPromises, name)) {
 			return emptyArrayPromise
@@ -565,6 +692,11 @@ class Module {
 		return this.definitionPromises[name]
 	}
 
+	/**
+	 * 获取规范化的名称
+	 * @param {string} localName - 本地名称
+	 * @returns {string} - 规范化后的名称
+	 */
 	getCanonicalName(localName) {
 		if (has(this.suggestedNames, localName)) {
 			localName = this.suggestedNames[localName]
@@ -601,10 +733,20 @@ class Module {
 		return this.canonicalNames[localName]
 	}
 
+	/**
+	 * 重命名变量或函数
+	 * @param {string} name - 原名称
+	 * @param {string} replacement - 新名称
+	 */
 	rename(name, replacement) {
 		this.canonicalNames[name] = replacement
 	}
 
+	/**
+	 * 建议名称
+	 * @param {string} exportName - 导出名称
+	 * @param {string} suggestion - 建议的名称
+	 */
 	suggestName(exportName, suggestion) {
 		if (!this.suggestedNames[exportName]) {
 			this.suggestedNames[exportName] = suggestion
@@ -612,8 +754,11 @@ class Module {
 	}
 }
 
+/**
+ * 外部模块类，表示非本地的模块（如 Node.js 核心模块）
+ */
 class ExternalModule {
-    constructor(id) {
+	constructor(id) {
 		this.id = id
 		this.name = null
 
@@ -627,6 +772,11 @@ class ExternalModule {
 		this.needsNamed = false
 	}
 
+	/**
+	 * 获取规范化的名称
+	 * @param {string} name - 名称
+	 * @returns {string} - 规范化后的名称
+	 */
 	getCanonicalName(name) {
 		if (name === 'default') {
 			return this.needsNamed ? `${this.name}__default` : this.name
@@ -640,10 +790,20 @@ class ExternalModule {
 		return `${this.name}.${name}`
 	}
 
+	/**
+	 * 重命名
+	 * @param {string} name - 原名称
+	 * @param {string} replacement - 新名称
+	 */
 	rename(name, replacement) {
 		this.canonicalNames[name] = replacement
 	}
 
+	/**
+	 * 建议名称
+	 * @param {string} exportName - 导出名称
+	 * @param {string} suggestion - 建议的名称
+	 */
 	suggestName(exportName, suggestion) {
 		if (!this.suggestedNames[exportName]) {
 			this.suggestedNames[exportName] = suggestion
@@ -651,20 +811,39 @@ class ExternalModule {
 	}
 }
 
+/**
+ * 获取节点的名称
+ * @param {Object} x - AST 节点
+ * @returns {string} - 节点名称
+ */
 function getName(x) {
 	return x.name
 }
 
+// 获取对象的所有键
 const keys = Object.keys
 
+// hasOwnProperty 方法的引用
 const hasOwnProp = Object.prototype.hasOwnProperty
 
+/**
+ * 检查对象是否有指定属性
+ * @param {Object} obj - 要检查的对象
+ * @param {string} prop - 属性名
+ * @returns {boolean} - 是否有该属性
+ */
 function has(obj, prop) {
 	return hasOwnProp.call(obj, prop)
 }
 
+/**
+ * 顺序执行数组中的每一项
+ * @param {Array} arr - 要执行的数组
+ * @param {Function} callback - 回调函数
+ * @returns {Promise} - 包含结果的 Promise
+ */
 // 将数组每一项当成参数传给 callback 执行，最后将结果用 promise 返回
-function sequence (arr, callback) {
+function sequence(arr, callback) {
 	const len = arr.length
 	const results = new Array(len)
 	let promise = Promise.resolve()
@@ -683,6 +862,12 @@ function sequence (arr, callback) {
 	return promise.then(() => results)
 }
 
+/**
+ * 替换标识符
+ * @param {Object} statement - AST 语句节点
+ * @param {Object} snippet - 代码片段
+ * @param {Object} names - 名称映射
+ */
 // 重写 node 名称
 // 例如 import { resolve } from path; 将 resolve 变为 path.resolve
 function replaceIdentifiers(statement, snippet, names) {
@@ -737,6 +922,13 @@ function replaceIdentifiers(statement, snippet, names) {
 	})
 }
 
+/**
+ * 生成 CommonJS 格式的代码
+ * @param {Object} bundle - Bundle 实例
+ * @param {Object} magicString - MagicString 实例
+ * @param {string} exportMode - 导出模式
+ * @returns {Object} - 处理后的 MagicString 实例
+ */
 function cjs(bundle, magicString, exportMode) {
 	let intro = `'use strict'\n\n`
 
@@ -781,10 +973,20 @@ function cjs(bundle, magicString, exportMode) {
 }
 
 // 对 AST 进行分析，按节点层级赋予对应的作用域，并找出有哪些依赖项和对依赖项作了哪些修改
+/**
+ * 分析 AST，处理作用域和依赖关系
+ * @param {Object} ast - 抽象语法树
+ * @param {Object} magicString - 用于代码操作的 MagicString 实例
+ * @param {Object} module - 当前模块实例
+ */
 function analyse(ast, magicString, module) {
 	let scope = new Scope()
 	let currentTopLevelStatement
 
+	/**
+	 * 将变量声明添加到当前作用域
+	 * @param {Object} declarator - 变量声明节点
+	 */
 	function addToScope(declarator) {
 		var name = declarator.id.name
 		scope.add(name, false)
@@ -794,6 +996,10 @@ function analyse(ast, magicString, module) {
 		}
 	}
 
+	/**
+	 * 将变量声明添加到块级作用域
+	 * @param {Object} declarator - 变量声明节点
+	 */
 	function addToBlockScope(declarator) {
 		var name = declarator.id.name
 		scope.add(name, true)
@@ -803,25 +1009,25 @@ function analyse(ast, magicString, module) {
 		}
 	}
 
-	// first we need to generate comprehensive scope info
+	// 首先需要生成全面的作用域信息
 	let previousStatement = null
 
 	// 为每个语句定义作用域，并将父子作用域关联起来
 	ast.body.forEach(statement => {
-		currentTopLevelStatement = statement // so we can attach scoping info
+		currentTopLevelStatement = statement // 用于附加作用域信息
 
-		// 这些属性不能遍历
+		// 为语句添加元数据属性
 		Object.defineProperties(statement, {
-			_defines:          { value: {} },
-			_modifies:         { value: {} },
-			_dependsOn:        { value: {} },
-			_included:         { value: false, writable: true },
-			_module:           { value: module },
-			_source:           { value: magicString.snip(statement.start, statement.end) },
-			_margin:           { value: [0, 0] },
+			_defines: { value: {} },  // 该语句定义的变量
+			_modifies: { value: {} },  // 该语句修改的变量
+			_dependsOn: { value: {} },  // 该语句依赖的变量
+			_included: { value: false, writable: true },  // 是否包含在最终输出中
+			_module: { value: module },  // 所属模块
+			_source: { value: magicString.snip(statement.start, statement.end) },  // 源代码片段
+			_margin: { value: [0, 0] },  // 语句前后的空行数
 		})
 
-		// determine margin
+		// 确定语句间的空行数
 		const previousEnd = previousStatement ? previousStatement.end : 0
 		const start = statement.start
 
@@ -831,8 +1037,9 @@ function analyse(ast, magicString, module) {
 		if (previousStatement) previousStatement._margin[1] = margin
 		statement._margin[0] = margin
 
+		// 遍历 AST 节点，构建作用域
 		walk(statement, {
-			enter (node) {
+			enter(node) {
 				let newScope
 				switch (node.type) {
 					case 'FunctionExpression':
@@ -846,15 +1053,17 @@ function analyse(ast, magicString, module) {
 							names.push(node.id.name)
 						}
 
+						// 创建新的函数作用域
 						newScope = new Scope({
 							parent: scope,
-							params: names, // TODO rest params?
+							params: names, // TODO: 处理剩余参数?
 							block: false
 						})
 
 						break
 
 					case 'BlockStatement':
+						// 创建新的块级作用域
 						newScope = new Scope({
 							parent: scope,
 							block: true
@@ -863,6 +1072,7 @@ function analyse(ast, magicString, module) {
 						break
 
 					case 'CatchClause':
+						// 创建 catch 子句的作用域
 						newScope = new Scope({
 							parent: scope,
 							params: [node.param.name],
@@ -872,7 +1082,8 @@ function analyse(ast, magicString, module) {
 						break
 
 					case 'VariableDeclaration':
-						node.declarations.forEach(node.kind === 'let' ? addToBlockScope : addToScope) // TODO const?
+						// 处理变量声明，区分 let 和其他声明
+						node.declarations.forEach(node.kind === 'let' ? addToBlockScope : addToScope) // TODO: 处理 const?
 						break
 
 					case 'ClassDeclaration':
@@ -880,16 +1091,18 @@ function analyse(ast, magicString, module) {
 						break
 				}
 
+				// 如果创建了新作用域，将其附加到节点上
 				if (newScope) {
 					Object.defineProperty(node, '_scope', { value: newScope })
 					scope = newScope
 				}
 			},
-			leave (node) {
+			leave(node) {
 				if (node === currentTopLevelStatement) {
 					currentTopLevelStatement = null
 				}
 
+				// 离开作用域时恢复父作用域
 				if (node._scope) {
 					scope = scope.parent
 				}
@@ -899,34 +1112,47 @@ function analyse(ast, magicString, module) {
 		previousStatement = statement
 	})
 
-	// then, we need to find which top-level dependencies this statement has,
-	// and which it potentially modifies
-	// 然后，我们需要找出这个语句有哪些顶级依赖项，以及它可能修改哪些依赖项
+	// 然后，找出每个语句的顶级依赖项和可能修改的变量
 	ast.body.forEach(statement => {
-		function checkForReads (node, parent) {
+		/**
+		 * 检查节点是否读取了变量
+		 * @param {Object} node - AST 节点
+		 * @param {Object} parent - 父节点
+		 */
+		function checkForReads(node, parent) {
 			// 节点类型为 Identifier，并且不存在 statement 作用域中，说明它是顶级依赖项
 			if (node.type === 'Identifier') {
-				// disregard the `bar` in `foo.bar` - these appear as Identifier nodes
+				// 忽略 `foo.bar` 中的 `bar` - 这些作为 Identifier 节点出现
 				if (parent.type === 'MemberExpression' && node !== parent.object) {
 					return
 				}
 
-				// disregard the `bar` in { bar: foo }
+				// 忽略 { bar: foo } 中的 `bar`
 				if (parent.type === 'Property' && node !== parent.value) {
 					return
 				}
 
 				const definingScope = scope.findDefiningScope(node.name)
 
+				// 如果变量不在当前作用域中定义，且不是由当前语句定义的，则它是一个依赖项
 				if ((!definingScope || definingScope.depth === 0) && !statement._defines[node.name]) {
 					statement._dependsOn[node.name] = true
 				}
 			}
 
 		}
-		// 检查有没修改依赖
+
+		/**
+		 * 检查节点是否修改了变量
+		 * @param {Object} node - AST 节点
+		 */
 		function checkForWrites(node) {
-			function addNode (node, disallowImportReassignments) {
+			/**
+			 * 将节点添加到修改列表
+			 * @param {Object} node - AST 节点
+			 * @param {boolean} disallowImportReassignments - 是否禁止导入重新赋值
+			 */
+			function addNode(node, disallowImportReassignments) {
 				while (node.type === 'MemberExpression') {
 					node = node.object
 				}
@@ -938,22 +1164,23 @@ function analyse(ast, magicString, module) {
 				statement._modifies[node.name] = true
 			}
 
-			// 检查 a = 1 + 2 中的 a 是否被修改
-			// 如果 a 是引入模块并且被修改就报错
+			// 检查赋值表达式 a = 1 + 2 中的 a 是否被修改
 			if (node.type === 'AssignmentExpression') {
 				addNode(node.left, true)
 			}
-			// a++/a--
+			// 检查自增/自减表达式 a++/a--
 			else if (node.type === 'UpdateExpression') {
 				addNode(node.argument, true)
 			} else if (node.type === 'CallExpression') {
+				// 检查函数调用的参数
 				node.arguments.forEach(arg => addNode(arg, false))
 			}
 		}
 
+		// 遍历语句，检查读取和修改的变量
 		walk(statement, {
-			enter (node, parent) {
-				// skip imports
+			enter(node, parent) {
+				// 跳过导入语句
 				if (/^Import/.test(node.type)) return this.skip()
 
 				if (node._scope) scope = node._scope
@@ -961,17 +1188,27 @@ function analyse(ast, magicString, module) {
 				checkForReads(node, parent)
 				checkForWrites(node, parent)
 			},
-			leave (node) {
+			leave(node) {
 				if (node._scope) scope = scope.parent
 			}
 		})
 	})
 
+	// 将顶级作用域附加到 AST 上
 	ast._scope = scope
 }
 
-// 作用域
+/**
+ * 作用域类，用于管理变量的作用域
+ */
 class Scope {
+	/**
+	 * 创建作用域实例
+	 * @param {Object} options - 作用域选项
+	 * @param {Scope} options.parent - 父作用域
+	 * @param {Array} options.params - 参数列表
+	 * @param {boolean} options.block - 是否是块级作用域
+	 */
 	constructor(options = {}) {
 		this.parent = options.parent
 		this.depth = this.parent ? this.parent.depth + 1 : 0
@@ -979,20 +1216,34 @@ class Scope {
 		this.isBlockScope = !!options.block
 	}
 
+	/**
+	 * 添加变量到作用域
+	 * @param {string} name - 变量名
+	 * @param {boolean} isBlockDeclaration - 是否是块级声明
+	 */
 	add(name, isBlockDeclaration) {
 		if (!isBlockDeclaration && this.isBlockScope) {
-			// it's a `var` or function declaration, and this
-			// is a block scope, so we need to go up
+			// 如果是 var 或函数声明，且当前是块级作用域，需要提升到父作用域
 			this.parent.add(name, isBlockDeclaration)
 		} else {
 			this.names.push(name)
 		}
 	}
 
+	/**
+	 * 检查作用域是否包含变量
+	 * @param {string} name - 变量名
+	 * @returns {boolean} - 是否包含变量
+	 */
 	contains(name) {
 		return !!this.findDefiningScope(name)
 	}
 
+	/**
+	 * 查找定义变量的作用域
+	 * @param {string} name - 变量名
+	 * @returns {Scope|null} - 定义变量的作用域，如果未找到则返回 null
+	 */
 	findDefiningScope(name) {
 		if (this.names.includes(name)) {
 			return this
@@ -1008,26 +1259,47 @@ class Scope {
 
 let shouldSkip
 let shouldAbort
-// 对 AST 的节点调用 enter() 和 leave() 函数，如果有子节点将递归调用
-function walk (ast, { enter, leave }) {
+
+/**
+ * 遍历 AST 节点
+ * @param {Object} ast - AST 节点
+ * @param {Object} callbacks - 回调函数对象
+ * @param {Function} callbacks.enter - 进入节点时的回调
+ * @param {Function} callbacks.leave - 离开节点时的回调
+ */
+function walk(ast, { enter, leave }) {
 	shouldAbort = false
 	visit(ast, null, enter, leave)
 }
 
+// 遍历上下文，提供控制遍历的方法
 let context = {
 	skip: () => shouldSkip = true,
 	abort: () => shouldAbort = true
 }
 
+// 缓存节点类型的子节点键
 let childKeys = {}
 
 let toString = Object.prototype.toString
 
-function isArray (thing) {
+/**
+ * 检查对象是否为数组
+ * @param {*} thing - 要检查的对象
+ * @returns {boolean} - 是否为数组
+ */
+function isArray(thing) {
 	return toString.call(thing) === '[object Array]'
 }
 
-function visit (node, parent, enter, leave) {
+/**
+ * 访问 AST 节点
+ * @param {Object} node - 当前节点
+ * @param {Object} parent - 父节点
+ * @param {Function} enter - 进入节点时的回调
+ * @param {Function} leave - 离开节点时的回调
+ */
+function visit(node, parent, enter, leave) {
 	if (!node || shouldAbort) return
 
 	if (enter) {
@@ -1036,12 +1308,14 @@ function visit (node, parent, enter, leave) {
 		if (shouldSkip || shouldAbort) return
 	}
 
+	// 获取节点的子节点键
 	let keys = childKeys[node.type] || (
 		childKeys[node.type] = Object.keys(node).filter(key => typeof node[key] === 'object')
 	)
 
 	let key, value, i, j
 
+	// 遍历所有子节点
 	i = keys.length
 	while (i--) {
 		key = keys[i]
@@ -1059,6 +1333,7 @@ function visit (node, parent, enter, leave) {
 		}
 	}
 
+	// 调用离开回调
 	if (leave && !shouldAbort) {
 		leave(node, parent)
 	}

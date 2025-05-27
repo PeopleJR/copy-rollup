@@ -1,0 +1,35 @@
+{
+  "app": {
+    "title": "多言語アプリ",
+    "welcome": "私たちのアプリケーションへようこそ",
+    "description": "これはi18nを統合したVueアプリです",
+    "switchLanguage": "言語を切り替える"
+  },
+  "nav": {
+    "home": "ホーム",
+    "about": "私たちについて",
+    "contact": "お問い合わせ"
+  },
+  "home": {
+    "title": "ホームページ",
+    "introduction": "これは私たちのアプリケーションのホームページです。"
+  },
+  "about": {
+    "title": "私たちについて",
+    "content": "私たちは素晴らしいソフトウェアを作ることに専念している会社です。"
+  },
+  "contact": {
+    "title": "お問い合わせ",
+    "email": "メール",
+    "phone": "電話",
+    "address": "住所",
+    "submit": "送信",
+    "message": "あなたのメッセージ"
+  },
+  "user": {
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "register": "登録",
+    "profile": "プロフィール"
+  }
+} 

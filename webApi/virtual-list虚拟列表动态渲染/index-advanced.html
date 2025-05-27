@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级虚拟列表 - 使用原生Web API实现</title>
+    <link rel="stylesheet" href="styles-advanced.css">
+</head>
+<body>
+    <header>
+        <h1>高级虚拟列表示例</h1>
+        <p>使用原生Web API实现高性能大数据列表渲染 - 包含动态高度、懒加载等高级功能</p>
+    </header>
+
+    <main>
+        <section class="demo-section">
+            <div class="demo-tabs">
+                <button id="tab-basic" class="tab-button active">基础虚拟列表</button>
+                <button id="tab-dynamic" class="tab-button">动态高度</button>
+                <button id="tab-lazy" class="tab-button">数据懒加载</button>
+            </div>
+
+            <div class="tab-content" id="basic-tab-content">
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="total-items-basic">总项目数:</label>
+                        <input type="number" id="total-items-basic" min="100" max="1000000" value="10000">
+                    </div>
+                    <div class="control-group">
+                        <label for="item-height-basic">项目高度(px):</label>
+                        <input type="number" id="item-height-basic" min="20" max="200" value="50">
+                    </div>
+                    <div class="control-group">
+                        <label for="overscan-basic">预加载项目数:</label>
+                        <input type="number" id="overscan-basic" min="0" max="50" value="5">
+                    </div>
+                    <button id="apply-settings-basic" class="primary-button">应用设置</button>
+                </div>
+
+                <div class="list-container">
+                    <!-- 基础虚拟列表的视口 -->
+                    <div id="virtual-list-basic" class="virtual-list">
+                        <!-- 用于撑开滚动区域的元素 -->
+                        <div id="scroll-height-basic" class="scroll-height"></div>
+                        <!-- 实际渲染的列表项容器 -->
+                        <div id="list-content-basic" class="list-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="dynamic-tab-content">
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="total-items-dynamic">总项目数:</label>
+                        <input type="number" id="total-items-dynamic" min="100" max="100000" value="5000">
+                    </div>
+                    <div class="control-group">
+                        <label for="dynamic-variation">高度变化(%%):</label>
+                        <input type="range" id="dynamic-variation" min="0" max="200" value="100">
+                        <span id="variation-value">100%</span>
+                    </div>
+                    <button id="apply-settings-dynamic" class="primary-button">应用设置</button>
+                </div>
+
+                <div class="list-container">
+                    <!-- 动态高度虚拟列表的视口 -->
+                    <div id="virtual-list-dynamic" class="virtual-list">
+                        <!-- 用于撑开滚动区域的元素 -->
+                        <div id="scroll-height-dynamic" class="scroll-height"></div>
+                        <!-- 实际渲染的列表项容器 -->
+                        <div id="list-content-dynamic" class="list-content"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="lazy-tab-content">
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="items-per-page">每页项目数:</label>
+                        <input type="number" id="items-per-page" min="10" max="500" value="100">
+                    </div>
+                    <div class="control-group">
+                        <label for="total-pages">总页数:</label>
+                        <input type="number" id="total-pages" min="1" max="100" value="10">
+                    </div>
+                    <div class="control-group">
+                        <label for="api-delay">API延迟(ms):</label>
+                        <input type="number" id="api-delay" min="0" max="5000" value="500">
+                    </div>
+                    <button id="apply-settings-lazy" class="primary-button">应用设置</button>
+                </div>
+
+                <div class="list-container">
+                    <!-- 懒加载虚拟列表的视口 -->
+                    <div id="virtual-list-lazy" class="virtual-list">
+                        <!-- 用于撑开滚动区域的元素 -->
+                        <div id="scroll-height-lazy" class="scroll-height"></div>
+                        <!-- 实际渲染的列表项容器 -->
+                        <div id="list-content-lazy" class="list-content"></div>
+                        <!-- 加载指示器 -->
+                        <div id="loader" class="loader">
+                            <div class="loader-spinner"></div>
+                            <p>加载中...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="performance-monitor">
+                <h3>性能监控</h3>
+                <div class="monitor-content">
+                    <div class="monitor-stats">
+                        <div class="stat-group">
+                            <div class="stat-item">
+                                <span>渲染项目数:</span>
+                                <span id="rendered-count">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>总项目数:</span>
+                                <span id="total-count">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>渲染比例:</span>
+                                <span id="render-ratio">0%</span>
+                            </div>
+                        </div>
+                        <div class="stat-group">
+                            <div class="stat-item">
+                                <span>渲染时间:</span>
+                                <span id="render-time">0ms</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>滚动位置:</span>
+                                <span id="scroll-position">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>帧率:</span>
+                                <span id="fps">0fps</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="performance-graph">
+                        <canvas id="perf-graph" width="600" height="150"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <h2>高级虚拟列表功能</h2>
+            <div class="info-box">
+                <p>此示例展示了虚拟列表的多种高级功能实现：</p>
+                
+                <h3>动态高度支持</h3>
+                <p>传统虚拟列表假设所有项目高度相同，而实际应用中项目高度往往不一：</p>
+                <ul>
+                    <li>实时测量每个渲染项目的实际高度</li>
+                    <li>使用高度缓存避免重复测量</li>
+                    <li>动态调整项目位置和滚动区域</li>
+                </ul>
+                
+                <h3>数据懒加载</h3>
+                <p>结合后端API分页加载数据，实现无限滚动：</p>
+                <ul>
+                    <li>监测滚动位置，接近底部时触发加载</li>
+                    <li>维护加载状态，避免重复请求</li>
+                    <li>优雅处理加载中和错误状态</li>
+                </ul>
+                
+                <h3>滚动优化</h3>
+                <p>提高滚动性能和体验：</p>
+                <ul>
+                    <li>滚动方向感知，优先渲染滚动方向上的新项目</li>
+                    <li>动态调整预加载数量，适应不同滚动速度</li>
+                    <li>使用requestAnimationFrame优化滚动性能</li>
+                </ul>
+                
+                <h3>性能监控</h3>
+                <p>实时监控关键性能指标：</p>
+                <ul>
+                    <li>渲染时间：每次更新DOM的耗时</li>
+                    <li>帧率：滚动过程中的FPS</li>
+                    <li>渲染比例：实际渲染项目占总项目的百分比</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>高级虚拟列表示例 &copy; 2023 | 使用原生Web API实现</p>
+    </footer>
+
+    <script src="mock-api.js"></script>
+    <script src="virtualList-advanced.js"></script>
+</body>
+</html>

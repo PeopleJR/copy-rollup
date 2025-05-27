@@ -1,0 +1,253 @@
+/* 
+ * 虚拟列表样式
+ * 包含页面布局、组件样式和响应式设计
+ */
+
+/* 基础样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f8f9fa;
+    padding: 0;
+    margin: 0;
+}
+
+/* 页面布局 */
+header, footer {
+    background-color: #343a40;
+    color: #fff;
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+header h1 {
+    margin-bottom: 0.5rem;
+}
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+section {
+    margin-bottom: 3rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+h2 {
+    margin-bottom: 1.5rem;
+    color: #343a40;
+    border-bottom: 2px solid #dee2e6;
+    padding-bottom: 0.5rem;
+}
+
+/* 控制面板样式 */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    align-items: center;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 150px;
+}
+
+.control-group label {
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+    color: #495057;
+}
+
+.control-group input {
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* 虚拟列表样式 */
+.list-container {
+    margin: 1rem 0;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.virtual-list {
+    height: 400px;
+    overflow-y: auto;
+    position: relative;
+    background-color: #f8f9fa;
+}
+
+.scroll-height {
+    position: absolute;
+    width: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.list-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+/* 列表项样式 */
+.list-item {
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    background-color: #fff;
+    transition: background-color 0.2s;
+    position: absolute;
+    width: 100%;
+    left: 0;
+}
+
+.list-item:hover {
+    background-color: #f1f3f5;
+}
+
+.list-item-content {
+    display: flex;
+    justify-content: space-between;
+}
+
+.list-item-index {
+    font-weight: bold;
+    color: #6c757d;
+    margin-right: 1rem;
+    min-width: 50px;
+}
+
+.list-item-text {
+    flex-grow: 1;
+}
+
+/* 统计信息样式 */
+.stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+.stat-item {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.stat-item span:first-child {
+    font-weight: 500;
+    color: #495057;
+}
+
+.stat-item span:last-child {
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* 信息区域样式 */
+.info-box {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 1.5rem;
+}
+
+.info-box p {
+    margin-bottom: 1rem;
+}
+
+.info-box ul {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* 按钮样式 */
+button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.primary-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+.primary-button:hover {
+    background-color: #0069d9;
+}
+
+.secondary-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+}
+
+.secondary-button:hover {
+    background-color: #5a6268;
+}
+
+/* 页脚样式 */
+footer {
+    margin-top: 2rem;
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .control-group {
+        width: 100%;
+    }
+    
+    .virtual-list {
+        height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats {
+        flex-direction: column;
+    }
+    
+    .list-item-content {
+        flex-direction: column;
+    }
+    
+    .list-item-index {
+        margin-bottom: 0.5rem;
+    }
+} 

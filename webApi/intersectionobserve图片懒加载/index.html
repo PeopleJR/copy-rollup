@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片懒加载示例 - Intersection Observer API</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>图片懒加载示例</h1>
+        <p>使用Intersection Observer API实现高性能的图片懒加载</p>
+    </header>
+
+    <main>
+        <section class="description">
+            <h2>原理说明</h2>
+            <p>本示例使用Intersection Observer API监测图片元素是否进入视口。当图片进入视口时，才会加载实际图片资源，从而提高页面性能。</p>
+            <p>向下滚动查看懒加载效果。注意观察网络请求，图片只有在滚动到可见区域时才会被加载。</p>
+        </section>
+
+        <section class="gallery">
+            <h2>图片画廊</h2>
+            <div class="image-container">
+                <!-- 图片1 -->
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/10/800/600" 
+                         alt="风景图片1">
+                    <div class="loading-indicator"></div>
+                </div>
+                
+                <!-- 图片2 -->
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/11/800/600" 
+                         alt="风景图片2">
+                    <div class="loading-indicator"></div>
+                </div>
+                
+                <!-- 图片3 -->
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/12/800/600" 
+                         alt="风景图片3">
+                    <div class="loading-indicator"></div>
+                </div>
+                
+                <!-- 图片4 -->
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/13/800/600" 
+                         alt="风景图片4">
+                    <div class="loading-indicator"></div>
+                </div>
+                
+                <!-- 图片5 -->
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/14/800/600" 
+                         alt="风景图片5">
+                    <div class="loading-indicator"></div>
+                </div>
+                
+                <!-- 图片6 -->
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/15/800/600" 
+                         alt="风景图片6">
+                    <div class="loading-indicator"></div>
+                </div>
+                
+                <!-- 图片7 -->
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/16/800/600" 
+                         alt="风景图片7">
+                    <div class="loading-indicator"></div>
+                </div>
+                
+                <!-- 图片8 -->
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/17/800/600" 
+                         alt="风景图片8">
+                    <div class="loading-indicator"></div>
+                </div>
+                
+                <!-- 图片9 -->
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/18/800/600" 
+                         alt="风景图片9">
+                    <div class="loading-indicator"></div>
+                </div>
+                
+                <!-- 图片10 -->
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+
+
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+
+
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+
+
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+                <div class="image-wrapper">
+                    <img class="lazy-image" 
+                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24px' fill='%23333333'%3E加载中...%3C/text%3E%3C/svg%3E" 
+                         data-src="https://picsum.photos/id/19/800/600" 
+                         alt="风景图片10">
+                    <div class="loading-indicator"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="code-explanation">
+            <h2>实现代码</h2>
+            <pre><code>
+// 创建Intersection Observer实例
+const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        // 当图片进入视口
+        if (entry.isIntersecting) {
+            const img = entry.target;
+            const src = img.getAttribute('data-src');
+            
+            if (src) {
+                img.setAttribute('src', src);
+                img.classList.add('loaded');
+                
+                // 图片加载完成后，停止观察该元素
+                observer.unobserve(img);
+            }
+        }
+    });
+}, {
+    // 设置视口交叉阈值
+    threshold: 0.1,
+    // 设置根边距，提前加载
+    rootMargin: '0px 0px 200px 0px'
+});
+
+// 获取所有懒加载图片并观察它们
+document.querySelectorAll('.lazy-image').forEach(img => {
+    observer.observe(img);
+});
+            </code></pre>
+        </section>
+    </main>
+
+    <footer>
+        <p>Intersection Observer API 图片懒加载示例 &copy; 2023</p>
+    </footer>
+
+    <script src="lazyload.js"></script>
+</body>
+</html> 

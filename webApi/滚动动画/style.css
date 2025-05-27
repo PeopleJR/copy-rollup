@@ -1,0 +1,390 @@
+/* 基础样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f8f9fa;
+    overflow-x: hidden;
+}
+
+/* 滚动行为设置 - 确保平滑滚动体验 */
+html {
+    scroll-behavior: smooth;
+}
+
+/* 辅助功能样式 */
+.visually-hidden {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+/* 页头样式 */
+header {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 3rem 1rem;
+    position: relative;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+header .intro {
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    opacity: 0.9;
+}
+
+/* API支持指示器 */
+.api-support {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.support-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.support-indicator .indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #e74c3c;
+}
+
+.support-indicator .indicator.supported {
+    background-color: #2ecc71;
+}
+
+.support-indicator .text {
+    font-size: 0.9rem;
+}
+
+/* 滚动进度指示器 */
+.scroll-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background-color: rgba(255, 255, 255, 0.2);
+    z-index: 1000;
+}
+
+/* ScrollTimeline动画：进度条 */
+@keyframes progress-grow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #e74c3c;
+    width: 100%;
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+}
+
+@supports (animation-timeline: scroll()) {
+    .progress-bar {
+        animation: progress-grow auto linear;
+        animation-timeline: scroll();
+    }
+}
+
+/* 主内容区域 */
+main {
+    padding: 2rem 0;
+}
+
+/* 画廊容器 */
+.gallery {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.gallery-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10rem;
+    padding: 2rem 0;
+}
+
+/* 画廊项目 */
+.gallery-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* ViewTimeline动画：图片效果 */
+@keyframes image-zoom {
+    entry 0% { 
+        transform: scale(1.1);
+        filter: grayscale(1) brightness(0.8);
+    }
+    entry 30%, exit 70% { 
+        transform: scale(1);
+        filter: grayscale(0) brightness(1);
+    }
+    exit 100% { 
+        transform: scale(1.1);
+        filter: grayscale(0.5) brightness(0.9);
+    }
+}
+
+.image-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.image-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transform-origin: center;
+}
+
+@supports (animation-timeline: view()) {
+    .image-container {
+        view-timeline-name: --image-view;
+        view-timeline-axis: block;
+    }
+    
+    .image-container img {
+        animation: image-zoom linear;
+        animation-timeline: --image-view;
+    }
+}
+
+/* ViewTimeline动画：标题效果 */
+@keyframes caption-slide {
+    entry 0% { 
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    entry 30% { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.caption {
+    padding: 1.5rem;
+}
+
+.caption h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.caption p {
+    color: #7f8c8d;
+}
+
+@supports (animation-timeline: view()) {
+    .caption {
+        view-timeline-name: --caption-view;
+        view-timeline-axis: block;
+    }
+    
+    .caption h2 {
+        animation: caption-slide linear;
+        animation-timeline: --caption-view;
+        animation-range: entry 0% entry 40%;
+    }
+    
+    .caption p {
+        animation: caption-slide linear;
+        animation-timeline: --caption-view;
+        animation-range: entry 10% entry 50%;
+    }
+}
+
+/* API 说明部分 */
+.api-explanation {
+    background-color: #f1f5f9;
+    padding: 4rem 1rem;
+    margin-top: 4rem;
+}
+
+.api-explanation .container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.api-explanation h2 {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    color: #2c3e50;
+    font-size: 2rem;
+}
+
+.explanation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2rem;
+}
+
+.explanation-item {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.explanation-item h3 {
+    color: #e74c3c;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+/* 视差背景效果 */
+@keyframes parallax-move {
+    from { background-position: 50% 0%; }
+    to { background-position: 50% 100%; }
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(76, 161, 175, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(76, 161, 175, 0.05) 0%, transparent 50%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+@supports (animation-timeline: scroll()) {
+    body::before {
+        animation: parallax-move linear;
+        animation-timeline: scroll();
+    }
+}
+
+/* 页脚样式 */
+footer {
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-top: 3rem;
+}
+
+.scroll-to-top {
+    margin-bottom: 1rem;
+}
+
+/* ScrollTimeline动画：回到顶部按钮 */
+@keyframes button-fade {
+    from { 
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#scrollToTop {
+    padding: 0.5rem 1.5rem;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+    opacity: 0;
+}
+
+@supports (animation-timeline: scroll()) {
+    #scrollToTop {
+        animation: button-fade both linear;
+        animation-timeline: scroll();
+        animation-range: 20% 100%;
+    }
+}
+
+#scrollToTop:hover {
+    background-color: #c0392b;
+}
+
+footer small {
+    display: block;
+    margin-top: 1rem;
+    opacity: 0.8;
+    font-size: 0.85rem;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .caption h2 {
+        font-size: 1.5rem;
+    }
+    
+    .gallery-container {
+        gap: 5rem;
+    }
+    
+    .explanation-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 减少动画首选项支持 */
+@media (prefers-reduced-motion: reduce) {
+    .progress-bar,
+    .image-container img,
+    .caption h2,
+    .caption p,
+    body::before,
+    #scrollToTop {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    #scrollToTop {
+        opacity: 1;
+    }
+    
+    html {
+        scroll-behavior: auto;
+    }
+} 

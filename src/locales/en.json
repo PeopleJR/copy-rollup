@@ -1,0 +1,35 @@
+{
+  "app": {
+    "title": "Multilingual App",
+    "welcome": "Welcome to our application",
+    "description": "This is a Vue app with i18n integration",
+    "switchLanguage": "Switch Language"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "home": {
+    "title": "Home Page",
+    "introduction": "This is the home page of our application."
+  },
+  "about": {
+    "title": "About Us",
+    "content": "We are a company dedicated to creating amazing software."
+  },
+  "contact": {
+    "title": "Contact Us",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "submit": "Submit",
+    "message": "Your message"
+  },
+  "user": {
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register",
+    "profile": "Profile"
+  }
+} 

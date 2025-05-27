@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>条形码检测 - Barcode Detection API</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>条形码检测示例</h1>
+        <p>使用浏览器原生Barcode Detection API实现条形码检测</p>
+    </header>
+
+    <main>
+        <section class="api-status">
+            <h2>API支持状态</h2>
+            <div id="api-support-status" class="status-box">
+                <p>检查浏览器是否支持Barcode Detection API...</p>
+            </div>
+            <div id="formats-support-status" class="status-box">
+                <p>支持的条形码格式：</p>
+                <ul id="supported-formats-list">
+                    <li>正在检查...</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="detection-methods">
+            <h2>选择检测方式</h2>
+            <div class="tabs">
+                <button id="tab-camera" class="tab-button active">使用摄像头</button>
+                <button id="tab-upload" class="tab-button">上传图片</button>
+            </div>
+
+            <div id="camera-section" class="tab-content active">
+                <h3>使用摄像头检测条形码</h3>
+                <div class="camera-container">
+                    <video id="video" autoplay playsinline></video>
+                    <canvas id="camera-canvas" class="detection-overlay"></canvas>
+                    <div class="camera-controls">
+                        <button id="start-camera" class="primary-button">启动摄像头</button>
+                        <button id="stop-camera" class="secondary-button" disabled>停止摄像头</button>
+                        <select id="camera-select" class="select-input">
+                            <option value="">选择摄像头...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="upload-section" class="tab-content">
+                <h3>上传图片检测条形码</h3>
+                <div class="upload-container">
+                    <div class="upload-area" id="upload-area">
+                        <input type="file" id="file-input" accept="image/*">
+                        <label for="file-input" class="file-label">
+                            <span class="upload-icon">📁</span>
+                            <span>点击或拖拽图片到此处</span>
+                        </label>
+                    </div>
+                    <div class="image-preview-container">
+                        <img id="preview-image" class="preview-image" alt="预览图片">
+                        <canvas id="upload-canvas" class="detection-overlay"></canvas>
+                    </div>
+                    <button id="detect-button" class="primary-button" disabled>检测条形码</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="results-section">
+            <h2>检测结果</h2>
+            <div class="results-container">
+                <div id="results-display" class="results-display">
+                    <p class="no-results">尚未检测到条形码</p>
+                </div>
+                <div class="results-actions">
+                    <button id="copy-results" class="secondary-button" disabled>复制结果</button>
+                    <button id="clear-results" class="secondary-button" disabled>清除结果</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="api-info">
+            <h2>关于Barcode Detection API</h2>
+            <div class="info-box">
+                <p>Barcode Detection API是浏览器原生API，可以检测图像中的条形码，支持多种条形码格式。</p>
+                <p>主要特点：</p>
+                <ul>
+                    <li>支持多种条形码格式（QR码、Code 128、EAN等）</li>
+                    <li>可以检测图像中的多个条形码</li>
+                    <li>可以获取条形码的位置和内容</li>
+                    <li>可以与摄像头结合使用，实现实时检测</li>
+                </ul>
+                <p>浏览器支持：</p>
+                <ul>
+                    <li>Chrome 83+</li>
+                    <li>Edge 83+</li>
+                    <li>Opera 69+</li>
+                    <li>Safari 16+（需要启用实验性功能）</li>
+                    <li>Firefox：尚不支持</li>
+                </ul>
+                <p>详细信息请参考 <a href="https://developer.mozilla.org/en-US/docs/Web/API/Barcode_Detection_API" target="_blank">MDN Web Docs</a>。</p>
+            </div>
+        </section>
+
+        <section class="code-example">
+            <h2>示例代码</h2>
+            <pre><code>
+// 检查API是否可用
+if ('BarcodeDetector' in window) {
+    // 创建条形码检测器实例
+    const barcodeDetector = new BarcodeDetector({
+        // 指定要检测的条形码格式
+        formats: ['qr_code', 'code_128', 'ean_13']
+    });
+
+    // 从图像中检测条形码
+    barcodeDetector.detect(imageElement)
+        .then(barcodes => {
+            // 处理检测结果
+            barcodes.forEach(barcode => {
+                console.log(barcode.format); // 条形码格式
+                console.log(barcode.rawValue); // 条形码内容
+                console.log(barcode.boundingBox); // 条形码位置
+                console.log(barcode.cornerPoints); // 条形码角点
+            });
+        })
+        .catch(err => {
+            console.error('条形码检测失败:', err);
+        });
+} else {
+    console.error('此浏览器不支持Barcode Detection API');
+}
+            </code></pre>
+        </section>
+    </main>
+
+    <footer>
+        <p>Barcode Detection API 示例 &copy; 2023</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 

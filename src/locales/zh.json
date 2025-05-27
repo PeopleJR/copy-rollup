@@ -1,0 +1,35 @@
+{
+  "app": {
+    "title": "多语言应用",
+    "welcome": "欢迎使用我们的应用",
+    "description": "这是一个集成了i18n的Vue应用",
+    "switchLanguage": "切换语言"
+  },
+  "nav": {
+    "home": "首页",
+    "about": "关于",
+    "contact": "联系我们"
+  },
+  "home": {
+    "title": "首页",
+    "introduction": "这是我们应用的首页。"
+  },
+  "about": {
+    "title": "关于我们",
+    "content": "我们是一家致力于创造令人惊叹的软件的公司。"
+  },
+  "contact": {
+    "title": "联系我们",
+    "email": "电子邮件",
+    "phone": "电话",
+    "address": "地址",
+    "submit": "提交",
+    "message": "您的消息"
+  },
+  "user": {
+    "login": "登录",
+    "logout": "退出",
+    "register": "注册",
+    "profile": "个人资料"
+  }
+} 

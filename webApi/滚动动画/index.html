@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片滚动动画 - ScrollTimeline API 演示</title>
+    <meta name="description" content="使用ScrollTimeline和ViewTimeline API实现的图片滚动动画效果">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>ScrollTimeline API 图片滚动画廊</h1>
+        <p class="intro">使用现代 Web API 实现平滑的滚动动画效果，无需复杂的JavaScript代码</p>
+        <div class="scroll-indicator" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="progress-bar"></div>
+        </div>
+        <div class="api-support">
+            <div id="scroll-timeline-support" class="support-indicator">
+                <span class="indicator"></span>
+                <span class="text">ScrollTimeline API</span>
+            </div>
+            <div id="view-timeline-support" class="support-indicator">
+                <span class="indicator"></span>
+                <span class="text">ViewTimeline API</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="gallery">
+            <h2 class="visually-hidden">图片画廊</h2>
+            <div class="gallery-container">
+                <article class="gallery-item">
+                    <div class="image-container">
+                        <img src="https://picsum.photos/id/10/800/500" alt="宁静的湖泊风景，展现大自然的壮丽与宁静" loading="lazy">
+                    </div>
+                    <div class="caption">
+                        <h2>自然风光</h2>
+                        <p>宁静的湖泊风景，展现大自然的壮丽与宁静。滚动页面时，注意图片的变化效果是如何随着滚动位置变化的。</p>
+                    </div>
+                </article>
+
+                <article class="gallery-item">
+                    <div class="image-container">
+                        <img src="https://picsum.photos/id/11/800/500" alt="蜿蜒的山路通向远方，每一步都是新的发现" loading="lazy">
+                    </div>
+                    <div class="caption">
+                        <h2>山间小路</h2>
+                        <p>蜿蜒的山路通向远方，每一步都是新的发现。此动画使用ScrollTimeline API创建，使得动画效果跟随滚动进度。</p>
+                    </div>
+                </article>
+
+                <article class="gallery-item">
+                    <div class="image-container">
+                        <img src="https://picsum.photos/id/12/800/500" alt="辽阔的海洋，蓝天白云，展现无尽的自由与可能" loading="lazy">
+                    </div>
+                    <div class="caption">
+                        <h2>海洋风光</h2>
+                        <p>辽阔的海洋，蓝天白云，展现无尽的自由与可能。ViewTimeline API使得当元素进入和离开视口时能创建流畅的动画。</p>
+                    </div>
+                </article>
+
+                <article class="gallery-item">
+                    <div class="image-container">
+                        <img src="https://picsum.photos/id/13/800/500" alt="现代都市的魅力，灯光与建筑的完美结合" loading="lazy">
+                    </div>
+                    <div class="caption">
+                        <h2>城市风光</h2>
+                        <p>现代都市的魅力，灯光与建筑的完美结合。这些动画在不支持ScrollTimeline的浏览器中也有后备方案。</p>
+                    </div>
+                </article>
+
+                <article class="gallery-item">
+                    <div class="image-container">
+                        <img src="https://picsum.photos/id/14/800/500" alt="郁郁葱葱的森林，生机勃勃的自然世界" loading="lazy">
+                    </div>
+                    <div class="caption">
+                        <h2>森林探险</h2>
+                        <p>郁郁葱葱的森林，生机勃勃的自然世界。滚动时的动画效果完全在合成线程上执行，确保了平滑的体验。</p>
+                    </div>
+                </article>
+
+                <article class="gallery-item">
+                    <div class="image-container">
+                        <img src="https://picsum.photos/id/15/800/500" alt="气势磅礴的瀑布，展现自然的力量与美丽" loading="lazy">
+                    </div>
+                    <div class="caption">
+                        <h2>瀑布奇观</h2>
+                        <p>气势磅礴的瀑布，展现自然的力量与美丽。这个演示尊重用户的减少动画偏好，确保可访问性。</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="api-explanation">
+            <div class="container">
+                <h2>关于 ScrollTimeline API</h2>
+                <div class="explanation-grid">
+                    <div class="explanation-item">
+                        <h3>什么是ScrollTimeline?</h3>
+                        <p>ScrollTimeline是一个新的Web API，它让动画可以与页面滚动同步，而不是与时间同步。这意味着动画的进度由用户的滚动位置决定。</p>
+                    </div>
+                    <div class="explanation-item">
+                        <h3>什么是ViewTimeline?</h3>
+                        <p>ViewTimeline是ScrollTimeline的扩展，它可以让动画与特定元素进入和离开视口的位置同步，而不仅仅是与整个页面的滚动位置同步。</p>
+                    </div>
+                    <div class="explanation-item">
+                        <h3>为什么使用ScrollTimeline?</h3>
+                        <p>传统的滚动动画需要在主线程上运行JavaScript代码，这可能导致性能问题。ScrollTimeline可以在合成线程上运行，提供更流畅的体验。</p>
+                    </div>
+                    <div class="explanation-item">
+                        <h3>浏览器支持情况</h3>
+                        <p>ScrollTimeline API目前正在成为Web标准，现代浏览器如Chrome 115+已经支持。对于不支持的浏览器，本示例提供了JavaScript后备方案。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="scroll-to-top">
+            <button id="scrollToTop" aria-label="回到页面顶部">回到顶部</button>
+        </div>
+        <p>ScrollTimeline API 和 ViewTimeline API 演示 &copy; 2025</p>
+        <p><small>本示例提供两种实现方式：CSS（支持ScrollTimeline API的浏览器）和JavaScript后备方案（所有浏览器）。</small></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

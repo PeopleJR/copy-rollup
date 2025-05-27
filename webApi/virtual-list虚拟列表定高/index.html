@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虚拟列表 - 使用原生Web API实现</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>虚拟列表示例</h1>
+        <p>使用原生Web API实现高性能大数据列表渲染</p>
+    </header>
+
+    <main>
+        <section class="demo-section">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="total-items">总项目数:</label>
+                    <input type="number" id="total-items" min="100" max="1000000" value="10000">
+                </div>
+                <div class="control-group">
+                    <label for="item-height">项目高度(px):</label>
+                    <input type="number" id="item-height" min="20" max="200" value="50">
+                </div>
+                <button id="apply-settings" class="primary-button">应用设置</button>
+            </div>
+
+            <div class="list-container">
+                <!-- 虚拟列表的视口 -->
+                <div id="virtual-list" class="virtual-list">
+                    <!-- 用于撑开滚动区域的元素 -->
+                    <div id="scroll-height" class="scroll-height"></div>
+                    <!-- 实际渲染的列表项容器 -->
+                    <div id="list-content" class="list-content"></div>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <span>渲染项目数:</span>
+                    <span id="rendered-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>总项目数:</span>
+                    <span id="total-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>渲染比例:</span>
+                    <span id="render-ratio">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span>滚动位置:</span>
+                    <span id="scroll-position">0</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <h2>关于虚拟列表</h2>
+            <div class="info-box">
+                <p>虚拟列表是一种优化大量数据渲染的技术，它只渲染可见区域内的元素，而不是一次性渲染所有元素。</p>
+                <p>主要特点：</p>
+                <ul>
+                    <li>只渲染可视区域内的元素和少量缓冲区元素</li>
+                    <li>通过计算滚动位置来决定渲染哪些元素</li>
+                    <li>使用绝对定位或transform来定位元素</li>
+                    <li>大幅提高渲染性能和内存使用效率</li>
+                </ul>
+                <p>本示例使用的浏览器原生API：</p>
+                <ul>
+                    <li>Intersection Observer API - 检测元素可见性</li>
+                    <li>Resize Observer API - 监控元素大小变化</li>
+                    <li>requestAnimationFrame - 优化滚动性能</li>
+                    <li>DOM操作API - 动态创建和移除DOM元素</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>虚拟列表示例 &copy; 2023 | 使用原生Web API实现</p>
+    </footer>
+
+    <script src="virtualList.js"></script>
+</body>
+</html> 
